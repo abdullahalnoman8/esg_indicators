@@ -59,12 +59,14 @@ def data_cleaning(pdfFileName):
     splitted_data = pdfFileName.split("_")
     data_frame = pandas.read_excel(pdfFileName + "/results_" + splitted_data[0] + ".xlsx")
     data_frame = data_frame.dropna(how='all', axis=1)
-    data_frame.drop(data_frame.columns[data_frame.columns.str.contains('unnamed',case = False, na=False)],axis = 1, inplace = True)
-    #data_frame[data_frame.columns[~data_frame.columns.str.match('^\d')]]
+    data_frame.drop(data_frame.columns[data_frame.columns.str.contains('unnamed', case=False, na=False)], axis=1,
+                    inplace=True)
+    # data_frame[data_frame.columns[~data_frame.columns.str.match('^\d')]]
     data_frame = data_frame[data_frame['Year'].astype(str).str.startswith('20')]
     data_frame = data_frame[data_frame['Year'].astype(str).str.match('^\d')]
-    data_frame.to_excel(os.path.join(pdfFileName, "cleaned_" + splitted_data[0] + ".xlsx"), index = False)
+    data_frame.to_excel(os.path.join(pdfFileName, "cleaned_" + splitted_data[0] + ".xlsx"), index=False)
     print("cleaned table for  " + splitted_data[0] + " created")
+
 
 def data_environment(pdfFileName):
     folder_name = "environment"
@@ -72,17 +74,21 @@ def data_environment(pdfFileName):
         os.mkdir(folder_name)
     splitted_data = pdfFileName.split("_")
     folder_name = "environment"
-    searchfor = ['carbon', 'co2', 'paper', 'electricity', 'power', 'waste', 'emission']
-    name = "./" + splitted_data[0] + "_" + splitted_data[1] +"/cleaned_" + splitted_data[0] + ".xlsx"
+    searchfor = ['carbon', 'co2', 'paper', 'electricity', 'power', 'waste', 'emission', 'oil', 'gas', 'energy', 'air',
+                 'diesel', 'petrol', 'water', 'fuel', 'cogeneration', 'photovoltaic', 'generator', 'heat', 'wood',
+                 'electric',
+                 'recycling and pollution']
+    name = "./" + splitted_data[0] + "_" + splitted_data[1] + "/cleaned_" + splitted_data[0] + ".xlsx"
     for file_name in glob.glob(name):
         df = pandas.read_excel(file_name)
-        df = pandas.DataFrame(df)   
-        df2 = df[df.columns[df.columns.str.contains('|'.join(searchfor), na=False, case = False)]]
+        df = pandas.DataFrame(df)
+        df2 = df[df.columns[df.columns.str.contains('|'.join(searchfor), na=False, case=False)]]
         df2.insert(0, "Year", df['Year'], allow_duplicates=False)
         df2.insert(1, "Company Name", df['Company Name'])
-        df2['Category'] = 'Environmental' 
-        df2.to_excel(os.path.join(folder_name,"results_" + splitted_data[0] + ".xlsx"), header = True, index = False)
+        df2['Category'] = 'Environmental'
+        df2.to_excel(os.path.join(folder_name, "results_" + splitted_data[0] + ".xlsx"), header=True, index=False)
         print("Environment table for  " + splitted_data[0] + " created")
+
 
 for file in pdf_files:
     tables = tabula.read_pdf(file, pages="all", stream=True)
@@ -94,9 +100,3 @@ for file in pdf_files:
     merge_all_tables(folder_name_tables, pdfFileName)
     data_cleaning(pdfFileName)
     data_environment(pdfFileName)
-
-
-
-
-
-
