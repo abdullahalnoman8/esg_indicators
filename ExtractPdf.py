@@ -12,7 +12,7 @@ def list_pdf_files(dr, ext):
         pdf_files.append(file)
 
 
-list_pdf_files("./pdf_files/", "*.pdf")
+list_pdf_files("./pdf_files_don/", "*.pdf")
 
 
 def save_all_clean_tables(tables, folder_name_tables):
@@ -67,6 +67,7 @@ def data_cleaning(pdfFileName):
     print("cleaned table for  " + splitted_data[0] + " created")
 
 
+#Environment
 def data_environment(pdfFileName):
     folder_name = "environment"
     if not os.path.isdir(folder_name):
@@ -182,7 +183,91 @@ def merge(pdfFileName):
         df = pandas.DataFrame(df)
         dfs = df.append(dfs, ignore_index = False)
         dfs.to_excel(os.path.join(folder_name, "merged_results.xlsx"), header=True, index=False)
+ 
+
+#Governance   
+
+def data_governance(pdfFileName):
+    folder_name = "governance"
+    if not os.path.isdir(folder_name):
+        os.mkdir(folder_name)
+    splitted_data = pdfFileName.split("_")
+    searchfor = [
+        'Earnings', 'Equity', 'Price', 'Loan', 'Income', 'Expenses', 'Capital', 'cost', 'funds', 'Financial', 'debt', 'assets',
+        'loss', 'interest','deposit', 'Donations', 'employment', 'issuance', 'Commitment', 'Disbursement', 'Exposures', 'lending', 
+        'estimates','cost', 'profit','earnings', 'property', 'mortgages', 'Tax', 'profit', 'equity', 'deposits'
+    ]
+    name = "./" + splitted_data[0] + "_" + splitted_data[1] + "/cleaned_" + splitted_data[0] + ".xlsx"
+    for file_name in glob.glob(name):
+        df = pandas.read_excel(file_name)
+        df = pandas.DataFrame(df)
+        df2 = df[df.columns[df.columns.str.contains('|'.join(searchfor), na=False, case=False)]]
+        df2.insert(0, "Year", df['Year'], allow_duplicates=False)
+        df2.insert(1, "Company Name", df['Company Name'])
+        df2['Category'] = 'Governance'
+        df2.to_excel(os.path.join(folder_name, "results_" + splitted_data[0] + ".xlsx"), header=True, index=False)
+        print("Governance table for  " + splitted_data[0] + " created")
+
+def data_governance_clean(pdfFileName):
+    splitted_data = pdfFileName.split("_")
+    folder_name = "merged_governance"
+    folder_name_tables = "governance"
+    if not os.path.isdir(folder_name):
+        os.mkdir(folder_name)
+    for file_name in glob.glob(folder_name_tables + "/*.xlsx"):
+        df = pandas.read_excel(file_name)
+        df = pandas.DataFrame(df)
+        
+        df.rename(columns={'Net profit':'Net Profit',
+                            'Profit before tax':'Profit Before Tax',
+                            'Profit for the year, total operations, SEK m':'Profit for the Year',
+                             'Profit before income tax':'Profit Before Tax',
+                             'Profit for the year': 'Profit for the Year',
+                             'Donations': 'Donations',
+                             'Donations volume (€)': 'Donations',
+                             'Expenditure for donations, sponsoring and memberships (in Euro)':'Donations',
+                             'Total expenses':'Total Expenses',
+                             'Total Expenses':'Total Expenses',
+                             'Expenses':'Total Expenses'
+                           }, inplace=True)
+        
+         if 'Profit for the Year' in df.columns:
+            df_profit = df[['Year', 'Company Name', 'Profit for the Year', 'Category']]
+            df_profit.to_excel(os.path.join(folder_name, "profit_" + splitted_data[0] + ".xlsx"), header=True, index=False)
+            print("Profit table for  " + splitted_data[0] + " created")
+            
+        if 'Profit Before Tax' in df.columns:
+            df_profit = df[['Year', 'Company Name', 'Profit Before Tax', 'Category']]
+            df_profit.to_excel(os.path.join(folder_name, "profit_tax_" + splitted_data[0] + ".xlsx"), header=True, index=False)
+            print("Profit before tax table for  " + splitted_data[0] + " created")
+
+        if 'Total Expenses' in df.columns:
+            df_profit = df[['Year', 'Company Name', 'Total Expenses', 'Category']]
+            df_profit.to_excel(os.path.join(folder_name, "expenses_" + splitted_data[0] + ".xlsx"), header=True, index=False)
+            print("Expenses table for  " + splitted_data[0] + " created")
+
+        if 'Donations' in df.columns:
+            df_profit = df[['Year', 'Company Name', 'Donations', 'Category']]
+            df_profit.to_excel(os.path.join(folder_name, "donations_" + splitted_data[0] + ".xlsx"), header=True, index=False)
+            print("Donations table for  " + splitted_data[0] + " created")
     
+        
+        os.remove(file_name)
+
+def merge_governance(pdfFileName):
+    dfs = pandas.DataFrame()
+    folder_electricity = "governance_indicators"
+    folder_name_tables = "governance"
+    if not os.path.isdir(folder_electricity):
+        os.mkdir(folder_electricity)
+    for file_name in glob.glob(folder_name_tables + "/*.xlsx"):
+        df = pandas.read_excel(file_name)
+        df = pandas.DataFrame(df)
+        dfs = df.append(dfs, ignore_index = False)
+        dfs.to_excel(os.path.join(folder_electricity, "gov_results.xlsx"), header=True, index=False)
+        os.remove(file_name)
+
+
 for file in pdf_files:
     tables = tabula.read_pdf(file, pages="all", stream=True)
     pdfFileName = os.path.splitext(os.path.basename(file))[0]
@@ -195,4 +280,7 @@ for file in pdf_files:
     #data_environment(pdfFileName)
     #data_environment_clean(pdfFileName)
     #merge_environment(pdfFileName)
-    merge(pdfFileName)
+    #merge(pdfFileName)
+    #data_governance(pdfFileName)
+    #data_governance_clean(pdfFileName)
+    merge_governance(pdfFileName)
