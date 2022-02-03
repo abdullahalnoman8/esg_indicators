@@ -174,14 +174,14 @@ def merge_environment(pdfFileName):
 def merge(pdfFileName):
     dfs = pandas.DataFrame()
     folder_name = "Environemnt_combined"
-    folder_name_tables = "Environemnt"
+    folder_name_tables = "Environment"
     if not os.path.isdir(folder_name):
         os.mkdir(folder_name)
     for file_name in glob.glob(folder_name_tables + "/*.xlsx"):
         df = pandas.read_excel(file_name)
         df = pandas.DataFrame(df)
-        dfs2 = df.append(dfs, ignore_index = False)
-        dfs2.to_excel(os.path.join(folder_name, "merged_results.xlsx"), header=True, index=False)
+        dfs = df.append(dfs, ignore_index = False)
+        dfs.to_excel(os.path.join(folder_name, "merged_results.xlsx"), header=True, index=False)
     
 for file in pdf_files:
     tables = tabula.read_pdf(file, pages="all", stream=True)
